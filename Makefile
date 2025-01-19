@@ -1,17 +1,24 @@
-GDBFLAGS := -F dwarf -g
+ASM ?= nasm
+ASMFLAGS ?=
+ASMFLAGS += -f elf64
+ASMFLAGS += -F dwarf -g
+LD ?= ld
+LDFLAGS ?=
+LDFLAGS += -m elf_x86_64
+RM ?= rm
 
 .PHONY: all clean spotless
 
 all: brainfuck
 
 brainfuck: brainfuck.o
-	ld -m elf_x86_64 -o brainfuck brainfuck.o
+	$(LD) $(LDFLAGS) -o brainfuck brainfuck.o
 
 brainfuck.o: brainfuck.S
-	nasm -f elf64 $(GDBFLAGS) brainfuck.S
+	$(ASM) $(ASMFLAGS) brainfuck.S
 
 clean:
-	-rm -f brainfuck.o
+	-$(RM) -f brainfuck.o
 
 spotless: clean
-	-rm -f brainfuck
+	-$(RM) -f brainfuck

@@ -56,14 +56,23 @@ _start:
     pop rax ; instruction ptr
     xor rbx, rbx ; current instruction (bl)
     mov rcx, rax ; base of instructions
-    mov rbp, rsp
-    dec rsp
+    mov rbp, rsp ; base of data stack
+    dec rsp      ; data[0]
+    mov r9, rsp ; keep track of stack size (lowest addr)
+    mov BYTE [rsp], bl
 
 .run:
     mov bl, BYTE [rax]
     cmp bl, '>'
     jne .r1
     dec rsp
+    cmp rsp, r9
+    jl .r0
+    jmp .run.loop
+.r0:
+    dec r9
+    xor rdx, rdx
+    mov BYTE [rsp], dl
     jmp .run.loop
 .r1:
     cmp bl, '<'
@@ -75,21 +84,24 @@ _start:
 .r2:
     cmp bl, '+'
     jne .r3
-    mov dl, [rsp]
+    mov dl, BYTE [rsp]
     inc dl
-    mov [rsp], dl
+    mov BYTE [rsp], dl
     jmp .run.loop
 .r3:
     cmp bl, '-'
     jne .r4
-    mov dl, [rsp]
+    mov dl, BYTE [rsp]
     dec dl
-    mov [rsp], dl
+    mov BYTE [rsp], dl
     jmp .run.loop
 .r4:
     cmp bl, '.'
     jne .r5
     mov rsi, rsp
+    mov rsp, r9
+    dec rsp
+    push rsi
     push rax
     push rbx
     push rcx
@@ -100,11 +112,15 @@ _start:
     pop rcx
     pop rbx
     pop rax
+    pop rsp
     jmp .run.loop
 .r5:
     cmp bl, ','
     jne .r6
     mov rsi, rsp
+    mov rsp, r9
+    dec rsp
+    push rsi
     push rax
     push rbx
     push rcx
@@ -115,34 +131,60 @@ _start:
     pop rcx
     pop rbx
     pop rax
+    pop rsp
     jmp .run.loop
 .r6:
     cmp bl, '['
     jne .r7
-    mov dl, [rsp]
+    mov dl, BYTE [rsp]
     test dl, dl
     jne .run.loop
+    mov r8, 1
 .r61:
     inc rax
     mov dl, BYTE [rax]
     test dl, dl
     je .fail
+    cmp dl, '['
+    je .r62
     cmp dl, ']'
+    je .r63
+    jmp .r64
+.r62:
+    inc r8
+    jmp .r64
+.r63:
+    dec r8
+.r64:
+    test r8, r8
     jne .r61
     jmp .run.loop
 .r7:
     cmp bl, ']'
     jne .run.loop
-    mov dl, [rsp]
+    mov dl, BYTE [rsp]
     test dl, dl
     je .run.loop
+    mov r8, 1
 .r71:
     dec rax
     cmp rax, rcx ; fix to look for base
     jl .fail
     mov dl, BYTE [rax]
+    cmp dl, ']'
+    je .r72
     cmp dl, '['
+    je .r73
+    jmp .r74
+.r72:
+    inc r8
+    jmp .r74
+.r73:
+    dec r8
+.r74:
+    test r8, r8
     jne .r71
+    jmp .run.loop
 .run.loop:
     inc rax
     test al, al
