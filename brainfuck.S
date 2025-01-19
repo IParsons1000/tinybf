@@ -125,8 +125,8 @@ _start:
     push rbx
     push rcx
     mov rdx, 1
-    mov rdi, 1
-    xor rax, rax
+    xor rdi, rdi
+    mov rax, rdi
     syscall ; read(stdin, data[i], 1)
     pop rcx
     pop rbx
