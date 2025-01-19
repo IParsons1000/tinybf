@@ -1,3 +1,8 @@
+#
+# (c)2025 Ira Parsons
+# brainfuck - a tiny brainfuck interpeter for linux in x86_64 assembly
+#
+
 ASM ?= nasm
 ASMFLAGS ?=
 ASMFLAGS += -f elf64
