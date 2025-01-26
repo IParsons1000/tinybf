@@ -23,7 +23,7 @@ brainfuck.o: brainfuck.S
 	$(ASM) $(ASMFLAGS) brainfuck.S
 
 clean:
-	-$(RM) -f brainfuck.o
+	-$(RM) brainfuck.o
 
 spotless: clean
-	-$(RM) -f brainfuck
+	-$(RM) brainfuck

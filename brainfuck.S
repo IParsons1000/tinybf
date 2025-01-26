@@ -15,15 +15,17 @@ _start:
     cmp rax, 2
     jl .fail           ; return 1 if no file is provided
 
+    ; open provided file
     xor rdx, rdx       ;  mode (O_RDONLY)
     mov rsi, rdx       ;  flags (none)
     mov rdi, [rsp+16]  ;  argv[1]
     mov rax, 2         ;  sys_open
     syscall            ; open(argv[1], 0, 0);
-    cmp rax, -1
-    je .fail
+    cmp rax, 0
+    jl .fail           ; return EXIT_FAILURE if file can't be accessed
     push rax           ; fd of the provided file
 
+    ; find file size
     mov rdx, 2         ;  whence (SEEK_END)
     xor rsi, rsi       ;  offset (0)
     mov rdi, rax       ;  fd supplied by open
@@ -34,6 +36,7 @@ _start:
     push rax           ; returned file len
                        ;  (preserve for the mmap syscall)
 
+    ; reset ptr to head of file
     xor rdx, rdx       ;  whence (SEEK_SET)
                        ;  (other args preserved from previous call)
     mov rax, 8         ;  sys_lseek
@@ -41,6 +44,7 @@ _start:
     cmp rax, -1
     je .fail
 
+    ; allocate space for file in memory
     xor r9, r9         ;  offset (0)
     mov r8, -1         ;  fd (-1)
     mov r10, 34        ;  flags (MAP_PRIVATE | MAP_ANONYMOUS)
@@ -53,6 +57,7 @@ _start:
     cmp rax, -1
     je .fail
 
+    ; read file into allocated space
     pop rdx            ;  file len from lseek
     mov rsi, rax       ;  address of allocated memory from mmap
     pop rdi            ;  fd from open
@@ -63,6 +68,7 @@ _start:
     cmp rax, -1
     je .fail
 
+    ; prepare initial values for state variables
     pop rax            ; pointer to file in memory (from mmap; will be used as the
                        ;  instruction pointer)
     mov rcx, rax       ; pointer to start of file in memory
@@ -72,9 +78,11 @@ _start:
     mov r9, rsp        ; keep track of stack size (stores the lowest address accessed)
     mov BYTE [rsp], bl ; initialize data[0] to zero
 
+    ; main loop
+
 .run:
     mov bl, BYTE [rax] ; read byte from instruction ptr into bl
-    cmp bl, '>'        ; '>' - move the data ptr one cell to the left
+    cmp bl, '>'        ; '>' - move the data ptr one cell to the right
     jne .r1
     dec rsp            ; rsp--
     cmp rsp, r9        ; if(data ptr < bottom of the stack)
@@ -86,10 +94,12 @@ _start:
     mov BYTE [rsp], dl ; intialize value at data ptr to zero
     jmp .run.loop
 .r1:
-    cmp bl, '<'        ; '<' - move the data ptr one cell to the right
+    cmp bl, '<'        ; '<' - move the data ptr one cell to the left
     jne .r2
-    cmp rsp, rbp       ; if(!data ptr)
-    je .run.loop       ;    then: loop
+    mov r12, rbp
+    sub r12, rsp
+    cmp r12, 1         ; if(!data ptr)
+    jle .run.loop      ;    then: loop
     inc rsp            ;    else: rsp++
     jmp .run.loop
 .r2:
@@ -114,13 +124,15 @@ _start:
     dec rsp            ;    any data)
     push rsi           ;  (preserve data ptr,
     push rax           ;    instruction ptr,
-    push rbx           ;    current instruction, and
-    push rcx           ;    base of instructions in memory)
+    push rbx           ;    current instruction,
+    push rcx           ;    base of instructions in memory, and
+    push r9            ;    stack size)
     mov rdx, 1         ;  count (1)
     mov rdi, 1         ;  STDOUT_FILENO (1)
     mov rax, 1         ;  sys_write
     syscall            ; write(stdout, data[i], 1)
-    pop rcx            ; (restore base of instructions in memory,
+    pop r9             ; (restore stack size,
+    pop rcx            ;   base of instructions in memory,
     pop rbx            ;   current instruction,
     pop rax            ;   instruction ptr, and
     pop rsp            ;   data ptr)
@@ -128,18 +140,30 @@ _start:
 .r5:
     cmp bl, ','        ; ',' - input value to cell at data ptr
     jne .r6
-    mov rsi, rsi       ;  *buf (data[i])
+    xor rdx, rdx
+    mov dl, BYTE [rsp] ; make a copy of the current data cell value
+    mov rsi, rsp       ;  *buf (data[i])
     mov rsp, r9        ;  (jump to bottom of stack to avoid overwriting
     dec rsp            ;    any data)
     push rsi           ;  (preserve data ptr,
     push rax           ;    instruction ptr,
-    push rbx           ;    current instruction, and
-    push rcx           ;    base of instructions in memory)
+    push rbx           ;    current instruction,
+    push rcx           ;    base of instructions in memory,
+    push r9            ;    stack size, and
+    push rdx           ;    previous value of data cell)
     mov rdx, 1         ;  count (1)
     xor rdi, rdi       ;  STDIN_FILENO (0)
     mov rax, rdi       ;  sys_read
     syscall            ; read(stdin, data[i], 1)
-    pop rcx            ; (restore base of instructions in memory,
+    pop rdx            ; (preemptively restore original value)
+    test rax, rax      ; if(return <= 0) (error or eof)
+    jle .r51           ;    then: no change for val at data ptr
+    jmp .r52           ;    else: business as usual
+.r51:
+    mov BYTE [rsi], dl
+.r52:
+    pop r9             ; (restore stack size,
+    pop rcx            ;   base of instructions in memory,
     pop rbx            ;   current instruction,
     pop rax            ;   instruction ptr, and
     pop rsp            ;   data ptr)
@@ -211,6 +235,7 @@ _start:
     inc rax            ;  i++
     test al, al        ; while(ins[i] != EOF)
     jne .run           ;    loop
+
     xor rdi, rdi       ;  val = EXIT_SUCCESS (0)
     jmp .exit
 
