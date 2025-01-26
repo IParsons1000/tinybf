@@ -1,0 +1,63 @@
+tinybf
+======
+
+tinybf - a very small brainf*ck interpreter
+
+Description
+-----------
+
+tinybf is a very small brainf*ck interpreter written in x86_64 assembly for
+Linux.
+
+Installation
+------------
+
+Build with:
+
+```bash
+make all
+```
+
+Optionally, you may test the build with:
+
+```bash
+make test
+```
+
+tinybf is a standalone binary.  You can copy it where you want it by hand, or
+install it in /bin with:
+
+```bash
+make install
+```
+
+Usage
+-----
+
+tinybf takes a brainf*ck source file supplied in the command line:
+
+```shell
+tinybf example.bf
+```
+
+Credit
+------
+
+The Brainf*ck programming language was originally created by Urban Mueller in
+1993.  The programs under the test/ directory with credits to [Daniel B.
+Cristofani](https://brainfuck.org) are licensed by him under the CC BY-SA 4.0 license.  Other programs
+there that credit Wikipedia are from the [brainf*ck page](https://en.wikipedia.org/wiki/Brainfuck), also
+distributed under the CC BY-SA 4.0 license, and also some from [Panu Kalliokoski's archive](https://esoteric.sange.fi/brainfuck/bf-source/prog/).
+Everything else in this repo is my work.
+
+License
+-------
+
+tinybf is licensed under the 3-clause BSD license.  The full license text is
+available in `LICENSE'.
+
+Contributing
+------------
+
+See the `LICENSE' file for more information on contributing to this project.
+Basically, you just have to credit me and include the text of the license.

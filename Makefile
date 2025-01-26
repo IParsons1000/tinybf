@@ -1,6 +1,6 @@
 #
 # (c)2025 Ira Parsons
-# brainfuck - a tiny brainfuck interpeter for linux in x86_64 assembly
+# tinybf - a tiny brainf*ck interpeter for linux in x86_64 assembly
 #
 
 ASM ?= nasm
@@ -10,20 +10,28 @@ ASMFLAGS += -F dwarf -g
 LD ?= ld
 LDFLAGS ?=
 LDFLAGS += -m elf_x86_64
+CP ?= cp
 RM ?= rm
 
-.PHONY: all clean spotless
+.PHONY: all test install clean spotless
 
-all: brainfuck
+all: tinybf
 
-brainfuck: brainfuck.o
-	$(LD) $(LDFLAGS) -o brainfuck brainfuck.o
+tinybf: tinybf.o
+	$(LD) $(LDFLAGS) -o tinybf tinybf.o
 
-brainfuck.o: brainfuck.S
-	$(ASM) $(ASMFLAGS) brainfuck.S
+tinybf.o: tinybf.S
+	$(ASM) $(ASMFLAGS) tinybf.S
+
+test: tinybf
+	sh test/test.sh . test
+
+install: tinybf clean
+	$(CP) tinybf /bin
+	$(CP) tinybf.1.gz /usr/share/man/man1
 
 clean:
-	-$(RM) brainfuck.o
+	-$(RM) tinybf.o
 
 spotless: clean
-	-$(RM) brainfuck
+	-$(RM) tinybf

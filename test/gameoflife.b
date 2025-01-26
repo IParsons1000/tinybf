@@ -1,3 +1,4 @@
+[Credit: https://esoteric.sange.fi/brainfuck/bf-source/prog]
 
                             Linus Akesson presents:
                    The Game Of Life implemented in Brainfuck

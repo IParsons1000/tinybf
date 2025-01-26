@@ -1,3 +1,5 @@
+[Credit: https://esoteric.sange.fi/brainfuck/bf-source/prog]
+
 [I just completed my first BrainFuck program, I think it's pretty good.  It
 generates the fibonacci number sequence, (for numbers under 100).  Formats
 quite nicely too.  Here it is below, with and without comments:]
