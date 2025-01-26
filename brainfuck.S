@@ -77,11 +77,11 @@ _start:
     dec rsp            ; data[0] (rsp is always 1 byte lower than rbp)
     mov r9, rsp        ; keep track of stack size (stores the lowest address accessed)
     mov BYTE [rsp], bl ; initialize data[0] to zero
+    mov bl, BYTE [rax] ; read byte from instruction ptr into bl
 
     ; main loop
 
 .run:
-    mov bl, BYTE [rax] ; read byte from instruction ptr into bl
     cmp bl, '>'        ; '>' - move the data ptr one cell to the right
     jne .r1
     dec rsp            ; rsp--
@@ -161,7 +161,7 @@ _start:
     jmp .r52           ;    else: business as usual
 .r51:
     mov BYTE [rsi], dl
-.r52:
+.r52:                  ; (fallthrough)
     pop r9             ; (restore stack size,
     pop rcx            ;   base of instructions in memory,
     pop rbx            ;   current instruction,
@@ -233,7 +233,8 @@ _start:
     jmp .run.loop
 .run.loop:
     inc rax            ;  i++
-    test al, al        ; while(ins[i] != EOF)
+    mov bl, BYTE [rax] ; read byte from instruction ptr into bl
+    test bl, bl        ; while(ins[i] != EOF)
     jne .run           ;    loop
 
     xor rdi, rdi       ;  val = EXIT_SUCCESS (0)
