@@ -44,11 +44,7 @@ Credit
 ------
 
 The Brainf*ck programming language was originally created by Urban Mueller in
-1993.  The programs under the test/ directory with credits to [Daniel B.
-Cristofani](https://brainfuck.org) are licensed by him under the CC BY-SA 4.0 license.  Other programs
-there that credit Wikipedia are from the [brainf*ck page](https://en.wikipedia.org/wiki/Brainfuck), also
-distributed under the CC BY-SA 4.0 license, and also some from [Panu Kalliokoski's archive](https://esoteric.sange.fi/brainfuck/bf-source/prog/).
-Everything else in this repo is my work.
+1993.  See `CREDITS' in the test submodule for test program credits.
 
 License
 -------
