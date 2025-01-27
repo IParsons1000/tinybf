@@ -31,6 +31,15 @@ install it in /bin with:
 make install
 ```
 
+NOTE: This program uses only Linux 64-bit system calls.  In theory, it should
+work on all systems, but I have only tested it on:
+ - Fedora 40
+
+It should be buildable on other POSIX-compliant x86-64 systems with only
+modifications to the syscall numbers.
+
+Recommended build tools: NASM, GNU ld, GNU make
+
 Usage
 -----
 
